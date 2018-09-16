@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -34,14 +33,6 @@ type Link struct {
 	ShortLink string `gorm:"not null;unique"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-}
-type LinkJson struct {
-	Link string
-}
-type JsonResponse struct {
-	// Reserved field to add some meta information to the API response
-	Meta interface{} `json:"meta"`
-	Data interface{} `json:"data"`
 }
 
 func getEnv(key, defaultVal string) string {
@@ -126,13 +117,13 @@ func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		db.Create(&link)
 	}
 	baseHost := os.Getenv("SHORT_HOST")
-	if baseHost != "" {
-		baseHost += "/t/"
-	} else {
-		baseHost = "http://localhost:80/t/"
+	if baseHost == "" {
+		baseHost = "http://localhost:8000"
 	}
-	c, _ := json.Marshal(baseHost + shortUrl[0])
-	fmt.Fprintf(w, string(c))
+	baseHost += "/t/"
+	ResultUrl := baseHost + shortUrl[0]
+	t, _ := template.ParseFiles("show.html")
+	t.Execute(w, ResultUrl)
 }
 
 // 短链接生成：
@@ -169,7 +160,7 @@ func Md5(str string) string {
 // 这里需要对 Token 进行详细的验证
 func checkToken(r *http.Request) bool {
 	token := r.Form.Get("token")
-	if token == "" {
+	if len(token) < 32 {
 		return false
 	}
 	return true

@@ -16,7 +16,7 @@ services:
     networks:
       - app_net
     ports:
-      - 80:8080
+      - 80:8000
 
 networks:
   app_net:
