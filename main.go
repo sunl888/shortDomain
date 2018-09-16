@@ -32,7 +32,7 @@ var (
 
 type Link struct {
 	ID        uint `gorm:"primary_key;AUTO_INCREMENT"`
-	Link      string
+	Link      string `gorm:"type:text"`
 	ShortLink string `gorm:"not null;unique"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
