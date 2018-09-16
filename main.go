@@ -10,7 +10,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,27 +35,24 @@ type Link struct {
 	UpdatedAt time.Time
 }
 
+func getEnv(key, defaultVal string) string {
+	env := os.Getenv(key)
+	if env == "" {
+		env = defaultVal
+	}
+	return env
+}
 func init() {
-	dbName := os.Getenv("DB_DATABASE")
-	if dbName == "" {
-		dbName = "short_link"
-	}
-	dbUser := os.Getenv("DB_USERNAME")
-	if dbUser == "" {
-		dbUser = "root"
-	}
-	dbPass := os.Getenv("DB_PASSWORD")
-	if dbPass == "" {
-		dbPass = "root"
-	}
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		dbHost = "172.19.0.3"
-	}
-	dbConfig = dbUser + ":" + dbPass + "@tcp(" + dbHost + "):3306)/" + dbName + "?charset=utf8&parseTime=True&loc=Local"
+	dbName := getEnv("DB_DATABASE", "short_link")
+	dbUser := getEnv("DB_USERNAME", "root")
+	dbPass := getEnv("DB_PASSWORD", "root")
+	dbHost := getEnv("DB_HOST", "172.19.0.3")
+
+	dbConfig = dbUser + ":" + dbPass + "@tcp(" + dbHost + ":3306)/" + dbName + "?charset=utf8&parseTime=True&loc=Local"
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
-		log.Fatal("数据库连接失败")
+		fmt.Println("数据库连接失败")
+		os.Exit(1)
 	}
 	defer db.Close()
 	db.AutoMigrate(Link{})
@@ -67,14 +63,15 @@ func main() {
 	router.GET("/t/:link", Rediract)
 	router.POST("/short/store", Store)
 	router.GET("/short/create/", Show)
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(":80", router)
 }
 
 func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	l := ps.ByName("link")
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
-		log.Fatal("数据库异常")
+		fmt.Fprintf(w, "数据库异常")
+		os.Exit(1)
 	}
 	defer db.Close()
 	dbLink := Link{}
@@ -121,10 +118,8 @@ func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if baseHost != "" {
 		baseHost += "/t/"
 	} else {
-		baseHost = "http://localhost:8080/t/"
+		baseHost = "http://localhost:80/t/"
 	}
-	//var shortLink ShortLink
-	//shortLink.Link = baseHost + shortUrl[0];
 	c, _ := json.Marshal(baseHost + shortUrl[0])
 	fmt.Fprintf(w, string(c))
 }

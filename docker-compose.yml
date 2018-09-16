@@ -7,14 +7,16 @@ services:
       context: ./
       dockerfile: Dockerfile
     environment:
-    - DB_DATABASE=short_link
-    - DB_USERNAME=root
-    - DB_PASSWORD=root
-    - DB_CONNECTION=mysql
-    - DB_HOST=mysql
-    - SHORT_HOST=http://wqer.vip
+      - DB_DATABASE=short_link
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - SHORT_HOST=http://wqer.vip
     networks:
-    - app_net
+      - app_net
+    ports:
+      - 80:80
 
 networks:
   app_net:

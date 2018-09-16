@@ -1,9 +1,24 @@
 FROM golang:alpine as builder
-COPY . /go/src/shortLink
-RUN go build /go/src/shortLink /go/src/shortLink/*.go
+
+COPY . /go/src/shortLink/
+
+WORKDIR /go/src/shortLink/
+
+RUN echo "http://mirrors.ustc.edu.cn/alpine/v3.8/main"  /etc/apk/repositories \
+ && echo "http://mirrors.ustc.edu.cn/alpine/v3.8/community" >> /etc/apk/repositories
+
+RUN apk update && apk --no-cache add git \
+  && go get \
+  && go build -v -o /go/src/shortLink/main /go/src/shortLink/main.go
 
 FROM alpine:latest
-COPY --from=builder /go/src/shortLink/main /app/main
+
+COPY --from=builder /go/src/shortLink/main /go/src/shortLink/index.html /app/
+
 WORKDIR /app
+
 RUN chmod +x /app/main
+
+EXPOSE 80
+
 CMD ["./main"]
