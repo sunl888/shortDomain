@@ -13,7 +13,9 @@ RUN apk update && apk --no-cache add git \
 
 FROM alpine:latest
 
-COPY --from=builder /go/src/shortLink/main /go/src/shortLink/index.html /app/
+COPY --from=builder /go/src/shortLink/main \
+   /go/src/shortLink/index.html \
+   /app/
 
 WORKDIR /app
 
