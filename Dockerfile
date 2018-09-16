@@ -21,6 +21,6 @@ WORKDIR /app
 
 RUN chmod +x /app/main
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["./main"]

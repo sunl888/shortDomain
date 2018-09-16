@@ -10,6 +10,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -33,6 +34,14 @@ type Link struct {
 	ShortLink string `gorm:"not null;unique"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+type LinkJson struct {
+	Link string
+}
+type JsonResponse struct {
+	// Reserved field to add some meta information to the API response
+	Meta interface{} `json:"meta"`
+	Data interface{} `json:"data"`
 }
 
 func getEnv(key, defaultVal string) string {
@@ -63,7 +72,9 @@ func main() {
 	router.GET("/t/:link", Rediract)
 	router.POST("/short/store", Store)
 	router.GET("/short/create/", Show)
-	http.ListenAndServe(":80", router)
+	if err := http.ListenAndServe(":8000", router); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
