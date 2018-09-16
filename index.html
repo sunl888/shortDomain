@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>网址缩短</title>
+</head>
+<body>
+<form action="/short/store" method="POST">
+    <input type="url" name="link" placeholder="请输入网址">
+    <input type="hidden" name="token" value="{{.}}"/>
+    <input type="submit" value="缩短网址">
+</form>
+</body>
+</html>
