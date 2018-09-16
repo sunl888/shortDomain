@@ -12,37 +12,48 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
 
 const (
-	dbDriver = "mysql"
-	dbConfig = "root:root@tcp(172.19.0.3:3306)/short_link?charset=utf8&parseTime=True&loc=Local"
-
 	VAL   = 0x3FFFFFFF
 	INDEX = 0x0000003D
 )
 
 var (
-	port     = ":8088"
-	baseUrl  = "http://localhost" + port + "/t/"
+	dbDriver = "mysql"
+	dbConfig = ""
 	alphabet = []byte("abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
 
 type Link struct {
-	ID        uint `gorm:"primary_key;AUTO_INCREMENT"`
+	ID        uint   `gorm:"primary_key;AUTO_INCREMENT"`
 	Link      string `gorm:"type:text"`
 	ShortLink string `gorm:"not null;unique"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type ShortLink struct {
-	Link string `json:"link;string"`
-}
-
 func init() {
+	dbName := os.Getenv("DB_DATABASE")
+	if dbName == "" {
+		dbName = "short_link"
+	}
+	dbUser := os.Getenv("DB_USERNAME")
+	if dbUser == "" {
+		dbUser = "root"
+	}
+	dbPass := os.Getenv("DB_PASSWORD")
+	if dbPass == "" {
+		dbPass = "root"
+	}
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "172.19.0.3"
+	}
+	dbConfig = dbUser + ":" + dbPass + "@tcp(" + dbHost + "):3306)/" + dbName + "?charset=utf8&parseTime=True&loc=Local"
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
 		log.Fatal("数据库连接失败")
@@ -56,7 +67,7 @@ func main() {
 	router.GET("/t/:link", Rediract)
 	router.POST("/short/store", Store)
 	router.GET("/short/create/", Show)
-	http.ListenAndServe(port, router)
+	http.ListenAndServe(":8080", router)
 }
 
 func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -87,13 +98,14 @@ func Show(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	r.ParseForm()
 	originUrl := r.Form.Get("link")
-
 	if checkToken(r) == false {
-		log.Fatal("Token 验证失败")
+		fmt.Fprintf(w, "Token 验证失败")
+		os.Exit(1)
 	}
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
-		log.Fatal("数据库连接失败")
+		fmt.Fprintf(w, "数据库连接失败")
+		os.Exit(1)
 	}
 	defer db.Close()
 	shortUrl := generageUrl(originUrl)
@@ -105,9 +117,15 @@ func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		link.ShortLink = shortUrl[0]
 		db.Create(&link)
 	}
-	var shortLink ShortLink
-	shortLink.Link = baseUrl + shortUrl[0];
-	c, _ := json.Marshal(shortLink)
+	baseHost := os.Getenv("SHORT_HOST")
+	if baseHost != "" {
+		baseHost += "/t/"
+	} else {
+		baseHost = "http://localhost:8080/t/"
+	}
+	//var shortLink ShortLink
+	//shortLink.Link = baseHost + shortUrl[0];
+	c, _ := json.Marshal(baseHost + shortUrl[0])
 	fmt.Fprintf(w, string(c))
 }
 

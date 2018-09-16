@@ -1,0 +1,22 @@
+version: "3"
+services:
+  shortLink:
+    image: short_link
+    container_name: short_link
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+    - DB_DATABASE=short_link
+    - DB_USERNAME=root
+    - DB_PASSWORD=root
+    - DB_CONNECTION=mysql
+    - DB_HOST=mysql
+    - SHORT_HOST=http://wqer.vip
+    networks:
+    - app_net
+
+networks:
+  app_net:
+    external:
+      name: app_net
