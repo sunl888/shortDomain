@@ -1,10 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>网址缩短工具</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>短网址工具</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet" type="text/css">
+    <!-- Styles -->
+    <style>
+        html, body {
+            background-color: #fff;
+            color: #636b6f;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 200;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .full-height {
+            height: 100vh;
+        }
+
+        .flex-center {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }
+
+        .position-ref {
+            position: relative;
+        }
+
+        .content {
+            text-align: center;
+        }
+
+        .title {
+            font-size: 84px;
+        }
+
+        .links > a {
+            color: #636b6f;
+            letter-spacing: .1rem;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .m-b-md {
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
-<h1><a href="{{.}}" target="_blank">点击体验新网址吧</a></h1>
+<div class="flex-center position-ref full-height">
+    <div class="content">
+        <div class="title m-b-md links">
+            <a target="_blank" href="{{.}}" title="{{.}}">Click me</a>
+        </div>
+    </div>
+</div>
 </body>
 </html>

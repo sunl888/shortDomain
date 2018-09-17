@@ -2,13 +2,90 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>网址缩短工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>短网址工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            box-sizing: border-box;
+        }
+
+        .index-form {
+            width: 50%;
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            transform: scale(0);
+            animation: strench ease-in-out .5s;
+            animation-fill-mode: forwards;
+        }
+
+        .index-form {
+            top: calc(45% - 80px);
+        }
+
+        .index-form h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 74px;
+            color: #7f878b;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 100;
+        }
+
+        .index-form > form {
+            display: flex;
+        }
+
+        .index-form input[type="text"] {
+            flex-grow: 1;
+            background: #aaa;
+        }
+
+        input::-webkit-input-placeholder {
+            color: #fff;
+        }
+
+        .index-form input {
+            padding: 10px 20px;
+            height: 40px;
+            display: block;
+            border: none;
+            outline: none;
+            color: #fff;
+        }
+
+        .index-form input[type="submit"] {
+            cursor: pointer;
+            background: #666;
+        }
+
+        .index-form input[type="submit"]:hover {
+            background: #888;
+        }
+
+        @keyframes strench {
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
 </head>
 <body>
-<form action="/short/store" method="POST">
-    <input type="url" name="link" placeholder="请输入网址">
-    <input type="hidden" name="token" value="{{.}}"/>
-    <input type="submit" value="缩短网址">
-</form>
+<div class="index-form">
+    <h1>wqer.vip</h1>
+    <form action="/short/store" method="POST">
+        <input type="text" name="link" placeholder="请输入网址">
+        <input type="hidden" name="token" value="{{.}}"/>
+        <input type="submit" value="缩短网址">
+    </form>
+</div>
 </body>
 </html>
