@@ -68,6 +68,7 @@ func main() {
 	}
 }
 
+// 重定向到某个页面
 func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	l := ps.ByName("link")
 	db, err := gorm.Open(dbDriver, dbConfig)
@@ -84,6 +85,7 @@ func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
+// 显示生成短链接的页面
 func Show(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	crutime := time.Now().Unix()
 	h := md5.New()
@@ -94,8 +96,10 @@ func Show(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	t.Execute(w, token)
 }
 
+// 保存短链接
 func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	r.ParseForm()
+	
 	originUrl := r.Form.Get("link")
 	if checkToken(r) == false {
 		fmt.Fprintf(w, "Token 验证失败")
@@ -150,6 +154,7 @@ func generageUrl(longUrl string) [4]string {
 	return result
 }
 
+// 生成指定字符串的 md5
 func Md5(str string) string {
 	m := md5.New()
 	m.Write([]byte(str))
