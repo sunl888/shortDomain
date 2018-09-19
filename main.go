@@ -42,16 +42,17 @@ func getEnv(key, defaultVal string) string {
 	}
 	return env
 }
+
 func init() {
 	dbName := getEnv("DB_DATABASE", "short_link")
 	dbUser := getEnv("DB_USERNAME", "root")
-	dbPass := getEnv("DB_PASSWORD", "root")
-	dbHost := getEnv("DB_HOST", "172.19.0.3")
+	dbPass := getEnv("DB_PASSWORD", "sunlong0717")
+	dbHost := getEnv("DB_HOST", "172.19.0.2")
 
 	dbConfig = dbUser + ":" + dbPass + "@tcp(" + dbHost + ":3306)/" + dbName + "?charset=utf8&parseTime=True&loc=Local"
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
-		fmt.Println("数据库连接失败")
+		fmt.Printf("数据库连接失败: %v", err.Error())
 		os.Exit(1)
 	}
 	defer db.Close()
@@ -62,7 +63,7 @@ func main() {
 	router := httprouter.New()
 	router.GET("/t/:link", Rediract)
 	router.POST("/short/store", Store)
-	router.GET("/short/create/", Show)
+	router.GET("/", Show)
 	if err := http.ListenAndServe(":8000", router); err != nil {
 		log.Fatal(err)
 	}
@@ -73,7 +74,7 @@ func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	l := ps.ByName("link")
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
-		fmt.Fprintf(w, "数据库异常")
+		fmt.Fprintf(w, "数据库异常: %v", err.Error())
 		os.Exit(1)
 	}
 	defer db.Close()
@@ -81,8 +82,17 @@ func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := db.Where("short_link = ?", l).First(&dbLink).Error; err != nil {
 		fmt.Fprintf(w, "无效的短链接")
 	} else {
-		http.Redirect(w, r, dbLink.Link, 302)
+
+		http.Redirect(w, r, parseUrl(dbLink.Link), 302)
 	}
+}
+
+func parseUrl(url string) string {
+	flag := url[:7]
+	if flag == "http://" {
+		return url
+	}
+	return "http://" + url
 }
 
 // 显示生成短链接的页面
@@ -99,7 +109,7 @@ func Show(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 // 保存短链接
 func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	r.ParseForm()
-	
+
 	originUrl := r.Form.Get("link")
 	if checkToken(r) == false {
 		fmt.Fprintf(w, "Token 验证失败")
@@ -107,7 +117,7 @@ func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	db, err := gorm.Open(dbDriver, dbConfig)
 	if err != nil {
-		fmt.Fprintf(w, "数据库连接失败")
+		fmt.Fprintf(w, "数据库连接失败: %v", err.Error())
 		os.Exit(1)
 	}
 	defer db.Close()
@@ -120,10 +130,7 @@ func Store(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		link.ShortLink = shortUrl[0]
 		db.Create(&link)
 	}
-	baseHost := os.Getenv("SHORT_HOST")
-	if baseHost == "" {
-		baseHost = "http://localhost:8000"
-	}
+	baseHost := getEnv("SHORT_HOST", "http://localhost:8000")
 	baseHost += "/t/"
 	ResultUrl := baseHost + shortUrl[0]
 	t, _ := template.ParseFiles("show.html")
