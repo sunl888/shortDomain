@@ -90,7 +90,7 @@ func Rediract(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // 解析url
 func parseUrl(url string) string {
 	flag := url[:7]
-	if flag == "http://" {
+	if flag == "http://" || flag == "https:/" {
 		return url
 	}
 	return "http://" + url
